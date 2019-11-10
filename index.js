@@ -151,12 +151,13 @@ function findBlock() {
 
     console.log('New block added to chain!');
 
-    var reqOptions = {
-        'url': `http://${val}/submit`,
-        'method': 'POST',
-        'body': this.blockchain
-    };
+
     this.nodes.forEach(function (val, index, array) {
+        var reqOptions = {
+            'url': `http://${val}/publish_block`,
+            'method': 'POST',
+            'body': this.blockchain
+        };
         reqOptions['url'] = val;
         console.log(`Notifying node: ${val} of new block.`);
         request(reqOptions, function (err, res, body) {
