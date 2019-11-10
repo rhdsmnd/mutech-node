@@ -85,28 +85,18 @@ var submitTransactionFunc = function submitTransaction(req, res) {
 var publishBlockFunc = function publishBlock(req, res) {
     newTxsInChain = [];
 
-    if (!req["blockchain"].length > this.blockchain.length) {
+    if (req["blockchain"].length <= this.blockchain.length) {
         return;
     }
 
-    for (block : req["blockchain"]) {
+    let block = {};
+    for (block in req["blockchain"]) {
         let txId = block["transaction"]["id"];
-        if (!txInChain(txId)) {
-            deleteTxFromPendingTransactions(txId);
-        }
+        deleteTxFromPendingTransactions(txId);
     }
 
     this.blockchain = req["blockchain"];
 };
-
-var txInChain = function(id) {
-    for (let i = 0; i < this.blockchain; i += 1) {
-        if (blockChain[i]["id"] == id) {
-            return true;
-        }
-    }
-    return false;
-}
 
 var deleteTxFromPendingTransactions = function(id) {
     for (let i = 0; i < this.pendingTransactions.length; i += 1) {
@@ -146,7 +136,39 @@ app.post('/publish_block', publishBlockFunc);
 app.get('/product/{id}', findProductIdHistoryFunc);
 app.get('/blockchain', blockchainFunc);
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Blockchain app listening on port ${port}!`));
+
+// put in a new thread/callback if necessary
+let nonce = 1;
+while (true) {
+    nonce = findBlock();
+}
+
+function findBlock() {
+
+    let newBlock = Blockchain.findBlock(nonce, this.pendingTransactions);
+    this.blockchain.push(newBlock);
+
+    console.log('New block added to chain!');
+
+    var reqOptions = {
+        'url': `http://${val}/submit`,
+        'method': 'POST',
+        'body': this.blockchain
+    };
+    this.nodes.forEach(function (val, index, array) {
+        reqOptions['url'] = val;
+        console.log(`Notifying node: ${val} of new block.`);
+        request(reqOptions, function (err, res, body) {
+            // ack
+        });
+    });
+
+    return newBlock["nonce"] + 1;
+}
+
+
+
 
 
 
