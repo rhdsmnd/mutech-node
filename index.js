@@ -146,7 +146,7 @@ while (true) {
 
 function findBlock() {
 
-    let newBlock = Blockchain.findBlock(nonce, this.pendingTransactions);
+    let newBlock = Blockchain.findBlock(nonce, this.pendingTransactions, this.blockchain);
     this.blockchain.push(newBlock);
 
     console.log('New block added to chain!');
